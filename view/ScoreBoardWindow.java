@@ -1,10 +1,9 @@
 package com.game.view;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.util.Vector;
 
 public class ScoreBoardWindow extends JFrame {
 
@@ -42,7 +41,7 @@ public class ScoreBoardWindow extends JFrame {
         this.setVisible(true);
     }
 
-    class ScoreBoard extends JPanel {
+    public class ScoreBoard extends JPanel {
         private int userNum;
         private String userName[];
         private String userScore[];
@@ -78,10 +77,28 @@ public class ScoreBoardWindow extends JFrame {
             }
         }
 
+        class User {
+            private String name;
+            private int score;
+
+            User() {
+            }
+
+            User(String inName, int inScore) {
+                name = inName;
+                score = inScore;
+            }
+
+        }
+
+        /*  Read in the scores in Scores.txt
+         *  select top 10 of the scores
+         *  show the top 10 scores on the screen
+         *  write back the top 10 scores
+         */
         private void readScores() throws IOException {
             userNum = 0;
-            userName = new String[10];
-            userScore = new String[10];
+            Vector<User> readUser;
 
             String charset = "GB2312";
             String fileName = "Scores.txt";
@@ -91,14 +108,25 @@ public class ScoreBoardWindow extends JFrame {
                             new FileInputStream(fileName), charset));
             String line;
 
-            while ((line = reader.readLine()) != null && userNum < 10) {
+            readUser = new Vector<User> ();
+            while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 if (line.length() == 0) continue;
                 int idx = line.indexOf("\t");
-                userName[userNum] = line.substring(0, idx);
-                userScore[userNum] = line.substring(idx + 1);
-                userNum++;
+                String name = line.substring(0, idx);
+                int score = Integer.parseInt(line.substring(idx + 1));
+                User tempUser = new User(name, score);
+               readUser.add(tempUser);
             }
+
+            // TODO
+            // 对readUser排序，选出前十个（若干个）放到userName, userScore数组里面
+            //  设置userNum的值
+            // 把前十个（若干个）写回到Scores.txt里面去
+            userNum = 0;
+            userName = new String[10];
+            userScore = new String[10];
+
             reader.close();
         }
     }
