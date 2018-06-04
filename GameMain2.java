@@ -8,7 +8,7 @@ import java.awt.*;
 public class GameMain2 {
     public static void main(String[] args) {
         Window2 win = new Window2();
-        win.initView();
+        win.initView(false);
         win.setTitle("2048[©版权朗度云所有]");
         win.getContentPane().setPreferredSize(new Dimension(400, 500));
         //JFrame直接调用setBackground设置背景色不生效
