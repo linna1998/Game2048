@@ -2,7 +2,12 @@ package com.game.view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Vector;
 
 public class ScoreBoardWindow extends JFrame {
@@ -26,7 +31,15 @@ public class ScoreBoardWindow extends JFrame {
         lexit = new JButton("Exit");
         lexit.setFont(new Font("", Font.BOLD, 22));
         lexit.setForeground(new Color(0x776e65));
+        lexit.setOpaque(true);
+        lexit.setBackground(new Color(0xbbada0));
         lexit.setBounds(260, 20, 120, 45);
+
+        lexit.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                //回到主界面
+            }
+        });
 
         //排行榜面板组件
         scoreBoard = new ScoreBoard();
@@ -40,6 +53,7 @@ public class ScoreBoardWindow extends JFrame {
         this.add(scoreBoard);
         this.setVisible(true);
     }
+
 
     public class ScoreBoard extends JPanel {
         private int userNum;
@@ -89,6 +103,26 @@ public class ScoreBoardWindow extends JFrame {
                 score = inScore;
             }
 
+            public String getName() {
+                return name;
+            }
+
+            public int getScore() {
+                return score;
+            }
+
+        }
+
+        class MyComparator implements Comparator<User> {
+            public int compare(User u1, User u2) {
+                if (u1.score > u2.score) {
+                    return 1;
+                } else if (u1.score < u2.score) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
         }
 
         /*  Read in the scores in Scores.txt
@@ -108,7 +142,7 @@ public class ScoreBoardWindow extends JFrame {
                             new FileInputStream(fileName), charset));
             String line;
 
-            readUser = new Vector<User> ();
+            readUser = new Vector<User>();
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 if (line.length() == 0) continue;
@@ -116,18 +150,32 @@ public class ScoreBoardWindow extends JFrame {
                 String name = line.substring(0, idx);
                 int score = Integer.parseInt(line.substring(idx + 1));
                 User tempUser = new User(name, score);
-               readUser.add(tempUser);
+                readUser.add(tempUser);
+            }
+            reader.close();
+            // 对readUser排序
+            Comparator cmp = new MyComparator();
+            Collections.sort(readUser, cmp);
+
+            //  设置userNum的值
+            if (readUser.size() <= 10) {
+                userNum = readUser.size();
+            } else {
+                userNum = 10;
             }
 
-            // TODO
-            // 对readUser排序，选出前十个（若干个）放到userName, userScore数组里面
-            //  设置userNum的值
-            // 把前十个（若干个）写回到Scores.txt里面去
-            userNum = 0;
+            // 把前userNum个放到userName, userScore数组里面
+            // 并写回到Scores.txt里面去
+            FileWriter writer = new FileWriter(fileName, false);
             userName = new String[10];
             userScore = new String[10];
-
-            reader.close();
+            for (int i = 0; i < userNum; i++) {
+                userName[i] = readUser.elementAt(i).getName();
+                userScore[i] = String.valueOf(readUser.elementAt(i).getScore());
+                String outString = userName[i] + "\t" + userScore[i] + "\n";
+                writer.write(outString);
+            }
+            writer.close();
         }
     }
 
