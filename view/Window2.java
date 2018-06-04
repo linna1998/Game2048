@@ -5,11 +5,16 @@ import com.game.main.WaveThread;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Vector;
+import java.io.*;
 
 public class Window2 extends JFrame {
 
@@ -21,17 +26,39 @@ public class Window2 extends JFrame {
             , new Font("Helvetica Neue", Font.BOLD, 24)
     };
 
+    //???
+    public HashMap<DirectEnum, Integer> direI;
+    public Vector<DirectEnum> direD;
     private GameBoard gameBoard;
     private JLabel ltitle;
     private JLabel lsctip;
     private JLabel lscore;
     private JLabel lgatip;
 
+    //private JButton lexit;  //???
+
     public Window2() {
+        //???
+        direI = new HashMap<DirectEnum, Integer>();
+        direD = new Vector<DirectEnum>();
+        direI.put(DirectEnum.NONE, 0);
+        direI.put(DirectEnum.LEFT, 1);
+        direI.put(DirectEnum.RIGHT, 2);
+        direI.put(DirectEnum.UP, 3);
+        direI.put(DirectEnum.DOWN, 4);
+        direD.add(DirectEnum.NONE);
+        direD.add(DirectEnum.LEFT);
+        direD.add(DirectEnum.RIGHT);
+        direD.add(DirectEnum.UP);
+        direD.add(DirectEnum.DOWN);
+
         this.setLayout(null);
     }
 
-    public void initView() {
+    public void initView(boolean reStart) {  //???reStart是true，则重开，否则复盘
+
+        score = 0;
+
         ltitle = new JLabel("2048", JLabel.CENTER);
         ltitle.setFont(new Font("", Font.BOLD, 50));
         ltitle.setForeground(new Color(0x776e65));
@@ -42,21 +69,33 @@ public class Window2 extends JFrame {
         lsctip.setForeground(new Color(0xeee4da));
         lsctip.setOpaque(true);//只有设置为true背景色才生效
         lsctip.setBackground(new Color(0xbbada0));
-        lsctip.setBounds(290, 5, 100, 25);
+        //lsctip.setBounds(290, 5, 100, 25);
+        lsctip.setBounds(150, 5, 100, 25);  //???
 
         lscore = new JLabel("0", JLabel.CENTER);
         lscore.setFont(new Font("Helvetica Neue", Font.BOLD, 22));
         lscore.setForeground(Color.WHITE);
         lscore.setOpaque(true);
         lscore.setBackground(new Color(0xbbada0));
-        lscore.setBounds(290, 30, 100, 25);
+        //lscore.setBounds(290, 30, 100, 25);
+        lscore.setBounds(150, 30, 100, 25);   //???
 
         lgatip = new JLabel("按方向键可以控制方块的移动，按ESC键可以重新开始游戏。", JLabel.LEFT);
         lgatip.setFont(new Font("Helvetica Neue", Font.ITALIC, 13));
         lgatip.setForeground(new Color(0x776e65));
         lgatip.setBounds(10, 60, 390, 30);
+
+        //???
+        /*lexit = new JButton("EXIT");
+        lexit.setFont(new Font("", Font.BOLD, 20));
+        lexit.setForeground(new Color(0x776e65));
+        lexit.setOpaque(true);
+        lexit.setBackground(new Color(0xbbada0));
+        //lexit.setBackground(Color.white);
+        lexit.setBounds(300, 10, 80, 50); */
+
         //游戏面板组件
-        gameBoard = new GameBoard();
+        gameBoard = new GameBoard(reStart);  //???
         gameBoard.setPreferredSize(new Dimension(400, 400));
         gameBoard.setBackground(new Color(0xbbada0));
         gameBoard.setBounds(0, 100, 400, 400);
@@ -67,6 +106,14 @@ public class Window2 extends JFrame {
         this.add(lscore);
         this.add(lgatip);
         this.add(gameBoard);
+
+        //???
+        /*this.add(lexit);
+        lexit.addActionListener(new ActionListener(){
+        	public void actionPerformed(ActionEvent e){
+        		//回到主界面
+        	}
+    	});*/
     }
 
     class GameBoard extends JPanel implements KeyListener {
@@ -82,8 +129,8 @@ public class Window2 extends JFrame {
         private boolean isMerge;
         private boolean isAnimate;
 
-        public GameBoard() {
-            initGame();
+        public GameBoard(boolean reStart) {  //???
+            initGame(reStart);  //???
             bgColor = new Color(0xbbada0);
             addKeyListener(this);
         }
@@ -93,7 +140,7 @@ public class Window2 extends JFrame {
             boolean moved = false;
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_ESCAPE:
-                    initGame();
+                    initGame(true);  //??? 改成进入主界面
                     break;
                 case KeyEvent.VK_LEFT:
                     moved = moveLeft();
@@ -119,19 +166,58 @@ public class Window2 extends JFrame {
             repaint();
         }
 
-        private void initGame() {
-            //初始化地图
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 4; j++) {
-                    tiles[i][j] = new Tile();
+        private void initGame(boolean reStart) {   //???
+            if(reStart) {
+                //初始化地图
+                for (int i = 0; i < 4; i++) {
+                    for (int j = 0; j < 4; j++) {
+                        tiles[i][j] = new Tile();
+                    }
                 }
-            }
-            //生成两个瓦片
-            createTile();
-            createTile();
+                //生成两个瓦片
+                createTile();
+                createTile();
 
-            isOver = false;
-            isAnimate = true;
+                score = 0;
+                lscore.setText(score + "");
+                isOver = false;
+                isAnimate = true;
+            }
+            else {
+                for (int i = 0; i < 4; i++) {
+                    for (int j = 0; j < 4; j++) {
+                        tiles[i][j] = new Tile();
+                    }
+                }
+                //???读盘
+                try {
+                    FileReader input = new FileReader("save_2048.txt");
+                    BufferedReader br = new BufferedReader(input);
+
+                    String s = br.readLine();
+                    int i = 0;
+                    while ( s!=null && i < 16) {
+                        String [] line = s.split( ",");
+                        tiles[i/4][i%4].step = Integer.parseInt(line[0]);
+                        tiles[i/4][i%4].value = Integer.parseInt(line[1]);
+                        tiles[i/4][i%4].directEnum = direD.get(Integer.parseInt(line[2]));
+                        tiles[i/4][i%4].ismerge = Boolean.getBoolean(line[3]);
+                        s = br.readLine();
+                        i++;
+                    }
+                    if(i == 16) {
+                        score = Integer.parseInt(s);
+                    }
+                    br.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                lscore.setText(score + "");
+                isOver = false;
+                isAnimate = true;
+            }
         }
 
         private void createTile() {
@@ -292,11 +378,11 @@ public class Window2 extends JFrame {
          */
         private void invokeAnimate() {
             if (isMerge) {
-                new WaveThread("merge.wav").start();
+                new WaveThread("resources\\merge.wav").start();
                 moveAnimate();
                 mergeAnimate();
             } else if (isMove) {
-                new WaveThread("move.wav").start();
+                new WaveThread("resources\\move.wav").start();
                 moveAnimate();
             }
             if (isMerge || isMove) {
@@ -389,7 +475,31 @@ public class Window2 extends JFrame {
                     }
                 }
             }
-            if (isOver) {
+
+            //存盘？？？
+            try {
+                FileWriter output = new FileWriter("save_2048.txt");
+                BufferedWriter bw = new BufferedWriter(output);
+
+                int i = 0;
+                while ( i < 16 ) {
+                    String s = "";
+                    s += (tiles[i/4][i%4].step + ",");
+                    s += (tiles[i/4][i%4].value + ",");
+                    s += (direI.get(tiles[i/4][i%4].directEnum) + ",");
+                    s += (tiles[i/4][i%4].ismerge + "\n");
+                    bw.write(s);
+                    i++;
+                }
+                String s = "" + score;
+                bw.write(s);
+                bw.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (isOver) {  //???
                 g.setColor(new Color(255, 255, 255, 180));
                 g.fillRect(0, 0, getWidth(), getHeight());
                 g.setColor(new Color(0x3d79ca));
@@ -397,6 +507,13 @@ public class Window2 extends JFrame {
                 FontMetrics fms = getFontMetrics(fonts[0]);
                 String value = "Game Over";
                 g.drawString(value, (getWidth() - fms.stringWidth(value)) / 2, getHeight() / 2);
+
+                new Thread(() ->
+                {
+                    EnterNameWindow test = new EnterNameWindow(score);
+                    test.writeScore();
+                }).start();
+
             }
 
         }
@@ -422,10 +539,10 @@ public class Window2 extends JFrame {
             String value = String.valueOf(tile.value);
             //注意：横坐标用j计算,纵坐标用i计算
             g.drawString(value, GAP_TILE + (GAP_TILE + SIZE_TILE) * j
-                    + (SIZE_TILE - fms.stringWidth(value)) / 2 + mx - ex
+                            + (SIZE_TILE - fms.stringWidth(value)) / 2 + mx - ex
                     , GAP_TILE + (GAP_TILE + SIZE_TILE) * i
-                    + (SIZE_TILE - fms.getAscent() - fms.getDescent()) / 2 + my - ex
-                    + fms.getAscent());
+                            + (SIZE_TILE - fms.getAscent() - fms.getDescent()) / 2 + my - ex
+                            + fms.getAscent());
         }
 
         @Override
