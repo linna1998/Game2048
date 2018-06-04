@@ -69,16 +69,16 @@ public class Window2 extends JFrame {
         lsctip.setForeground(new Color(0xeee4da));
         lsctip.setOpaque(true);//只有设置为true背景色才生效
         lsctip.setBackground(new Color(0xbbada0));
-        //lsctip.setBounds(290, 5, 100, 25);
-        lsctip.setBounds(150, 5, 100, 25);  //???
+        lsctip.setBounds(290, 5, 100, 25);
+        //lsctip.setBounds(150, 5, 100, 25);  //???
 
         lscore = new JLabel("0", JLabel.CENTER);
         lscore.setFont(new Font("Helvetica Neue", Font.BOLD, 22));
         lscore.setForeground(Color.WHITE);
         lscore.setOpaque(true);
         lscore.setBackground(new Color(0xbbada0));
-        //lscore.setBounds(290, 30, 100, 25);
-        lscore.setBounds(150, 30, 100, 25);   //???
+        lscore.setBounds(290, 30, 100, 25);
+        //lscore.setBounds(150, 30, 100, 25);   //???
 
         lgatip = new JLabel("按方向键可以控制方块的移动，按ESC键可以重新开始游戏。", JLabel.LEFT);
         lgatip.setFont(new Font("Helvetica Neue", Font.ITALIC, 13));
@@ -207,6 +207,8 @@ public class Window2 extends JFrame {
                     }
                     if(i == 16) {
                         score = Integer.parseInt(s);
+                        s = br.readLine();
+                        isOver = Boolean.getBoolean(s);
                     }
                     br.close();
 
@@ -215,7 +217,6 @@ public class Window2 extends JFrame {
                 }
 
                 lscore.setText(score + "");
-                isOver = false;
                 isAnimate = true;
             }
         }
@@ -491,7 +492,9 @@ public class Window2 extends JFrame {
                     bw.write(s);
                     i++;
                 }
-                String s = "" + score;
+                String s = "" + score + "\n";
+                bw.write(s);
+                s = "" + isOver;
                 bw.write(s);
                 bw.close();
 

@@ -116,9 +116,9 @@ public class ScoreBoardWindow extends JFrame {
         class MyComparator implements Comparator<User> {
             public int compare(User u1, User u2) {
                 if (u1.score > u2.score) {
-                    return 1;
-                } else if (u1.score < u2.score) {
                     return -1;
+                } else if (u1.score < u2.score) {
+                    return 1;
                 } else {
                     return 0;
                 }
